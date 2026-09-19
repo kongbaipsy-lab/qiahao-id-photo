@@ -36,7 +36,10 @@ $('removeBG').onclick=async()=>{if(!original||segmenting)return;if(bg==='origina
  }catch(e){if(original===photo){setBg('original');$('bgStatus').textContent='精细抠图未完成，请重试。已保留原图，不会自动使用低精度结果。';message('抠图未完成；原图仍可调整尺寸和下载。',true)}}
  finally{segmenting=false;$('removeBG').disabled=!original;$('removeBG').textContent='精细抠图并应用底色'}
 };
-$('domestic').onchange=()=>{if(!$('domestic').value)return;const [w,h,d]=$('domestic').value.split(',');$('width').value=w;$('height').value=h;$('dpi').value=d;updateSize();$('sizeHint').textContent='此预设仅设置尺寸。背景、头部比例及回执要求请核对接收单位规定。';};
+function applyCet(w,h){$('width').value=w;$('height').value=h;$('dpi').value='300';$('format').value='jpeg';$('limit').disabled=false;$('limit').value='200';$('domestic').value=w+','+h+',300,cet';updateSize();$('sizeHint').textContent='四六级：'+w+' × '+h+' px · JPG · 300 DPI · 200 KB 上限。底色和文件大小下限请按本校要求检查。';}
+document.querySelectorAll('[data-cet]').forEach(b=>b.onclick=()=>applyCet(...b.dataset.cet.split(',').map(Number)));
+$('cetBlue').onclick=()=>{$('bgColor').value='#64c5ff';setBg('#64c5ff')};
+$('domestic').onchange=()=>{if($('domestic').value.endsWith(',cet')){applyCet(...$('domestic').value.split(',').slice(0,2).map(Number));return}if(!$('domestic').value)return;const [w,h,d]=$('domestic').value.split(',');$('width').value=w;$('height').value=h;$('dpi').value=d;updateSize();$('sizeHint').textContent='此预设仅设置尺寸。背景、头部比例及回执要求请核对接收单位规定。';};
 $('dpi').onchange=changed;
 $('applyMM').onclick=()=>{const w=+$('mmW').value,h=+$('mmH').value,d=+$('dpi').value;const pxW=Math.round(w*d/25.4),pxH=Math.round(h*d/25.4);if(!Number.isFinite(w)||!Number.isFinite(h)||w<=0||h<=0||pxW<16||pxH<16||pxW>6000||pxH>6000||pxW*pxH>16000000){message('毫米尺寸换算后超出范围，请调整尺寸或 DPI。',true);return}$('width').value=pxW;$('height').value=pxH;updateSize();$('sizeHint').textContent=w+' × '+h+' mm · '+d+' DPI → '+pxW+' × '+pxH+' px';};
 function crc32(bytes){let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0)}return (crc^0xffffffff)>>>0}
